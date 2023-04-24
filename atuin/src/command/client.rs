@@ -11,6 +11,7 @@ mod sync;
 
 mod history;
 mod import;
+mod incognito;
 mod search;
 mod stats;
 
@@ -30,6 +31,9 @@ pub enum Cmd {
 
     /// Interactive history search
     Search(search::Cmd),
+
+    /// Set incognito mode
+    Incognito(incognito::Cmd),
 
     #[cfg(feature = "sync")]
     #[command(flatten)]
@@ -54,6 +58,10 @@ impl Cmd {
             Self::Import(import) => import.run(&mut db).await,
             Self::Stats(stats) => stats.run(&mut db, &settings).await,
             Self::Search(search) => search.run(db, &mut settings).await,
+            Self::Incognito(incognito) => {
+                incognito.run();
+                Ok(())
+            }
             #[cfg(feature = "sync")]
             Self::Sync(sync) => sync.run(settings, &mut db).await,
         }
