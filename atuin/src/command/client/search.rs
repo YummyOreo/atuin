@@ -65,6 +65,10 @@ pub struct Cmd {
     #[arg(long = "search-mode")]
     search_mode: Option<SearchMode>,
 
+    /// Have search be case sensitive
+    #[arg(long = "case_sensitive")]
+    case_sensitive: bool,
+
     /// Marker argument used to inform atuin that it was invoked from a shell up-key binding (hidden from help to avoid confusion)
     #[arg(long = "shell-up-key-binding", hide = true)]
     shell_up_key_binding: bool,
