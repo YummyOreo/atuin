@@ -1,5 +1,5 @@
 use clap::Subcommand;
-use eyre::{Context, Result};
+use eyre::{Context, ContextCompat, Result};
 
 use atuin_client::{encryption, record::sqlite_store::SqliteStore, settings::Settings};
 
@@ -10,6 +10,7 @@ use atuin_config::store::AliasStore;
 pub enum Cmd {
     Set { name: String, value: String },
     Delete { name: String },
+    Get { name: Option<String> },
 }
 
 impl Cmd {
@@ -25,6 +26,23 @@ impl Cmd {
         Ok(())
     }
 
+    async fn get(&self, store: AliasStore, name: Option<String>) -> Result<()> {
+        let aliases = store.aliases().await?;
+        if let Some(name) = name {
+            let pos = aliases
+                .iter()
+                .position(|x| x.name == name)
+                .wrap_err("No alias with name: ".to_string() + &name)?;
+            let alias = aliases.get(pos).expect("Should exist");
+            println!("{}: {}", alias.name, alias.value);
+        } else {
+            for alias in aliases {
+                println!("{}: {}", alias.name, alias.value);
+            }
+        }
+        Ok(())
+    }
+
     pub async fn run(&self, settings: &Settings, store: SqliteStore) -> Result<()> {
         let encryption_key: [u8; 32] = encryption::load_key(settings)
             .context("could not load encryption key")?
@@ -37,6 +55,8 @@ impl Cmd {
             Self::Set { name, value } => self.set(alias_store, name.clone(), value.clone()).await,
 
             Self::Delete { name } => self.delete(alias_store, name.clone()).await,
+
+            Self::Get { name } => self.get(alias_store, name.clone()).await,
         }
     }
 }
