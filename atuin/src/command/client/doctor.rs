@@ -72,6 +72,7 @@ impl ShellInfo {
 
         let shell = parent.name().trim().to_lowercase();
         let shell = shell.strip_prefix('-').unwrap_or(&shell);
+        let shell = shell.strip_suffix(".exe").unwrap_or(shell);
         let name = shell.to_string();
 
         let plugins = ShellInfo::plugins(name.as_str());
